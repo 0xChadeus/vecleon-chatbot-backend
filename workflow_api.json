@@ -1,0 +1,157 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "dreamshaperXL_turboDpmppSDEKarras.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "3": {
+    "inputs": {
+      "text": "1girl, (surprised:1.1), widening eyes, gasping mouth, flat white background",
+      "clip": [
+        "18",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "4": {
+    "inputs": {
+      "text": "low quality, deformed, horror",
+      "clip": [
+        "18",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "7": {
+    "inputs": {
+      "width": 512,
+      "height": 768,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage"
+  },
+  "8": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": 432789692419359,
+      "steps": 6,
+      "cfg": 3,
+      "sampler_name": "dpmpp_sde",
+      "scheduler": "karras",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "3",
+        0
+      ],
+      "negative": [
+        "4",
+        0
+      ],
+      "latent_image": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced"
+  },
+  "9": {
+    "inputs": {
+      "vae_name": "sdxl_vae.safetensors"
+    },
+    "class_type": "VAELoader"
+  },
+  "10": {
+    "inputs": {
+      "samples": [
+        "8",
+        0
+      ],
+      "vae": [
+        "9",
+        0
+      ]
+    },
+    "class_type": "VAEDecode"
+  },
+  "12": {
+    "inputs": {
+      "weight": 1,
+      "noise": 0,
+      "weight_type": "original",
+      "start_at": 0,
+      "end_at": 1,
+      "unfold_batch": false,
+      "ipadapter": [
+        "14",
+        0
+      ],
+      "clip_vision": [
+        "16",
+        0
+      ],
+      "image": [
+        "15",
+        0
+      ],
+      "model": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "IPAdapterApply"
+  },
+  "14": {
+    "inputs": {
+      "ipadapter_file": "ip-adapter_sdxl.bin"
+    },
+    "class_type": "IPAdapterModelLoader"
+  },
+  "15": {
+    "inputs": {
+      "image": "assistant1 (1).jpg",
+      "upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "16": {
+    "inputs": {
+      "clip_name": "clip_sdxl.safetensors"
+    },
+    "class_type": "CLIPVisionLoader"
+  },
+  "17": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "10",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  },
+  "18": {
+    "inputs": {
+      "lora_name": "emotions_lora.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "1",
+        0
+      ],
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "class_type": "LoraLoader"
+  }
+}

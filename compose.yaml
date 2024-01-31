@@ -1,0 +1,31 @@
+services:
+  django_gunicorn:
+    volumes:
+      - static:/static
+    env_file:
+      - .env
+    build:
+      context: .
+    ports:
+      - "7950:7950"
+    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:django_gunicorn
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static:/static
+    ports:
+      - "80:80"
+    depends_on:
+      - django_gunicorn
+    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:nginx
+
+  redis:
+    build: ./redis
+    ports:
+      - "6379:6379"
+    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:redis
+
+
+volumes:
+  static:

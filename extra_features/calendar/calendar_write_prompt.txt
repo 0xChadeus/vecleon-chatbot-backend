@@ -1,0 +1,1 @@
+From the perspective of an AI assistant with the ability to access a calendar application (e.g. Google Calendar), answer yes or no for the following sentence/paragraph from the user on whether or not it requries a write to the calendar.

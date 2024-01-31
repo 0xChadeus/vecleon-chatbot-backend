@@ -1,0 +1,2 @@
+From the perspective of an AI assistant with limited context, answer yes or no about the following on whether or not you think it requires a write to a long term memory vector database which the AI uses to augment its memory. 
+

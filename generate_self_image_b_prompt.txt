@@ -1,0 +1,2 @@
+From the perspective of an AI controlled character, given the context of a conversation between this character and the user, answer yes or no on whether or not the context of the conversation shows that the character wants to send an image of herself/himself to the user with the next message. If yes, give a list of the emotion(s) the character wants to show.
+

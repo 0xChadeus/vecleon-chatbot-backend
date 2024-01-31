@@ -1,0 +1,2 @@
+From the perspective of an AI controlled character, given the context of a conversation between this character and the user, answer yes or no on whether or not the following context of the conversation between this character and the user implies that the character wants to send an image to the user with the next message. If yes, what should the contents of the image be?
+
