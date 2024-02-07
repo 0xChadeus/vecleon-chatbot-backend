@@ -27,9 +27,9 @@ SECRET_KEY= os.getenv('SECRET_KEY')
 #DEBUG = True
 DEBUG=os.getenv("DEBUG")
 
-ALLOWED_HOSTS = ['django', '127.0.0.1', 'vecleon-chatbot-frontend-qvf6ajgmm-real-chadeus-projects.vercel.app']
-CSRF_TRUSTED_ORIGINS = ['https://vecleon-chatbot-frontend-qvf6ajgmm-real-chadeus-projects.vercel.app']
-CORS_ALLOWED_ORIGINS = ['https://vecleon-chatbot-frontend-qvf6ajgmm-real-chadeus-projects.vercel.app']
+ALLOWED_HOSTS = ['django', '127.0.0.1', '.vecleon-chatbot-frontend.vercel.app', '.amazonaws.com', '.vecleonbackend.com']
+CSRF_TRUSTED_ORIGINS = ['https://vecleon-chatbot-frontend.vercel.app']
+CORS_ALLOWED_ORIGINS = ['https://vecleon-chatbot-frontend.vercel.app']
 CORS_ALLOW_CREDENTIALS = True
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 CSRF_COOKIE_HTTPONLY = False
@@ -80,6 +80,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'server.middleware.HealthCheckMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',

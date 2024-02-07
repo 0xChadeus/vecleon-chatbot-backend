@@ -10,6 +10,7 @@ services:
       - "7950:7950"
     image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:django_gunicorn
 
+
   nginx:
     build: ./nginx
     volumes:
@@ -19,6 +20,8 @@ services:
     depends_on:
       - django_gunicorn
     image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:nginx
+    restart: unless-stopped
+
 
   redis:
     build: ./redis
@@ -29,3 +32,5 @@ services:
 
 volumes:
   static:
+  
+
