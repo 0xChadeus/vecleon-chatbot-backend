@@ -27,9 +27,9 @@ SECRET_KEY= os.getenv('SECRET_KEY')
 #DEBUG = True
 DEBUG=os.getenv("DEBUG")
 
-ALLOWED_HOSTS = ['django', '127.0.0.1', '.vecleon-chatbot-frontend.vercel.app', '.amazonaws.com', '.vecleonbackend.com']
-CSRF_TRUSTED_ORIGINS = ['https://vecleon-chatbot-frontend.vercel.app']
-CORS_ALLOWED_ORIGINS = ['https://vecleon-chatbot-frontend.vercel.app']
+ALLOWED_HOSTS = ['django', '127.0.0.1', '.amazonaws.com', '.vecleonbackend.com', '.vecleon.com']
+CSRF_TRUSTED_ORIGINS = ['https://vecleonbackend.com', 'https://vecleon.com']
+CORS_ALLOWED_ORIGINS = ['https://vecleonbackend.com', 'https://vecleon.com']
 CORS_ALLOW_CREDENTIALS = True
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 CSRF_COOKIE_HTTPONLY = False
@@ -43,13 +43,17 @@ CORS_ALLOW_HEADERS = [
     'content-type',
     'x-requested-with',
     'Authorization',
-    'Set-Cookie'
+    'Set-Cookie'    
 ] 
-CSRF_COOKIE_SAMESITE = 'Strict'  
+CSRF_COOKIE_SAMESITE = None  
+
+# domain settings
+CSRF_COOKIE_DOMAIN = '.vecleon.com'
+SESSION_COOKIE_DOMAIN = '.vecleon.com'
 
 # CROSS DOMAIN SETTINGS, DO NOT TOUCH OTHERWISE
-# SESSION_COOKIE_DOMAIN = '127.0.0.1:3000'
-# CSRF_COOKIE_PATH = '127.0.0.1'
+# SESSION_COOKIE_DOMAIN = '.vecleon-chatbot-frontend.vercel.app'
+# CSRF_COOKIE_PATH = '.vecleon-chatbot-frontend.vercel.app'
 
 
 
