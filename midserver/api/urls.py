@@ -14,6 +14,7 @@ urlpatterns = [
     path("get_character/", views.GetCharacter.as_view(), name="index"),
     path("get_chat/", views.GetChat.as_view(), name="index"),
     path("delete_chat/", views.DeleteChat.as_view(), name="index"),
+    path("update_chat_nsfw/", views.UpdateChatNSFW.as_view(), name="index"),
     path("delete_character/", views.DeleteCharacter.as_view(), name="index"),
     path("delete_world/", views.DeleteWorld.as_view(), name="index"),
     path("checkout/", views.GetCheckout.as_view(), name="index"),

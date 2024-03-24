@@ -3,7 +3,6 @@ channels==4.0.0
 channels_redis==4.1.0
 Django==4.2.7
 djangorestframework==3.14.0
-openai==1.6.1
 Requests==2.31.0
 sseclient_py==1.8.0
 stripe==7.0.0
@@ -13,8 +12,10 @@ psycopg==3.1.12
 boto3==1.29.4
 google_api_python_client==2.107.0
 google_auth_oauthlib==1.0.0
-openai==1.6.1
 protobuf==3.20.3
 pymilvus==2.3.3
-sentence_transformers==2.2.2
 gunicorn==21.2.0
+supervisor==4.2.5 
+sentence_transformers==2.2.2
+numpy==1.21.5
+anthropic

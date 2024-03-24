@@ -28,24 +28,17 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-
-
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    apt-get update && apt-get -y install libpq-dev gcc python3-dev git gnupg2 && \
-    python -m pip install -r requirements.txt && \ 
-    pip install git+https://github.com/suno-ai/bark.git
-
-
-
+    apt-get clean && apt-get update && apt-get -y install libpq-dev gcc python3-dev git gnupg2 && \
+    python -m pip install -r requirements.txt 
 
 # Copy the source code into the container.
 COPY . .
-
 
 # Switch to the non-privileged user to run the application.
 #USER appuser
@@ -54,7 +47,6 @@ COPY . .
 EXPOSE 7950
 
 # Run the application.
-#CMD ["python", "midserver/manage.py", "runserver", "0.0.0.0:7950"]
 ENTRYPOINT ["sh", "entrypoint.sh"]
 
 

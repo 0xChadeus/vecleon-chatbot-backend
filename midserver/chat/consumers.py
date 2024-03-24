@@ -11,28 +11,18 @@ import sseclient  # pip install sseclient-py
 import asyncio
 
 import json
-from app.extra_features.ltm.client import LTM
-from app.extra_features.calendar.google_calendar import Calendar
-from app.extra_features.images.image_recognition import get_imagedesc
-from app.extra_features.images.image_generation import ImageGenerator
-from app.extra_features.voice.voice_recognition import speech_to_text
-from app.extra_features.voice.voice_generation import AudioGenerator
+from .extra_features.ltm.client import LTM
 
 from api.models import Chat, CharacterCard
 
-from openai import OpenAI
+import anthropic
 
 
 class ChatConsumer(WebsocketConsumer):
 
     ltm = LTM(collection_name='chatbot1')
-    calendar = Calendar()
-    client = OpenAI(
-        api_key='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',
-        base_url='http://127.0.0.1:5000/v1'
-    )
-    img_generator = ImageGenerator()
-    audio_generator = AudioGenerator()
+    s = requests.Session()
+    client = anthropic.Anthropic(api_key='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')
     
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
@@ -83,86 +73,33 @@ class ChatConsumer(WebsocketConsumer):
         user_input = message_split[7]
         chat_id = message_split[-1]
         context = message_split[6] + '\n' + message_split[7]
+        prefill = message_split[11]
+        nsfw = message_split[12]
+        system_prompt = message_split[0]
 
+        chat = Chat.objects.get(id=chat_id)
 
-
-        if user.subscription_is_active and (user.subscription_package == "Standard" or user.subscription_package == "Unlimited"):
-
-            ltm_read = self.ltm.get_b_read(user_input)
-            ltm_write = self.ltm.get_b_write(user_input)
-
-            calendar_read = self.calendar.get_b_read(user_input)
-
-            generate = self.img_generator.get_b_generate_img(context)
-            generate_self = self.img_generator.get_b_generate_self_img(context)
-
-            if ltm_read:
-                ltm_result = self.ltm.search(user_input)
-                message_split.insert(8, 
-                        'This is the result \
-                            from your long term memory \
-                                which has the most relevance to \
-                                the previous message: ' + ltm_result)          
-
-            if ltm_write:
-                self.ltm.add_vector(user_input, chat_id)
-
-            if calendar_read:
-                events = self.calendar.get_events()
-                if events != None:
-                    message_split.insert(8, 
-                        'These are the next events\
-                            recorded in the user\'s calendar: ' + str(events))    
-                else:
-                    message_split.insert(8, 
-                        'These are the next events\
-                            recorded in the user\'s calendar: ' + 'No events')    
-
-
-            if generate[0]:
-                image = self.img_generator.generate_image(positive_prompt='anime, landscape, masterpiece, ' + generate[1], 
-                                                            negative_prompt='low quality, worst quality, deformed, horror')
-            
-                if image != 'error':
-                    self.send(text_data=json.dumps({"image": image, 
-                                            "is_image": True,
-                                            "msg_complete": "false"}))
-
-            if generate_self[0]:
-                character_img = Chat.objects.get(id=chat_id).character_key.src
-                self_image = self.img_generator.generate_self_image(img_url=character_img,
-                                                            positive_prompt='1girl, ' + generate_self[1], 
-                                                            negative_prompt='low quality, worst quality, deformed, horror',)
-                if self_image != 'error':
-                    self.send(text_data=json.dumps({"image": self_image, 
-                                                    "is_image": True,
-                                                    "msg_complete": "false"}))
-                    
-
-
+        message_split[6] = "<context>" + '\n' + context + '\n' + "</context>"
+        message_split[7] = ''
+        # if chat.nsfw:
+        #    message_split[12] = '<nsfw>' + '\n' + nsfw + '\n' + '</nsfw>'   
+        # else:
+        #    message_split[12] = ''
         message = '\n'.join(message_split)
 
-        completion = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": message},
-            ],
-            stream=True
-        )
-        
         curr_mes = ''
-        for chunk in completion:
-            msg_chunk = chunk.choices[0].delta.content
-            print(chunk.choices[0].delta)
-            curr_mes += msg_chunk
-            self.send(text_data=json.dumps({"message": msg_chunk, 
-                                                    "msg_complete": "false"}))
-            
-        # if user.subscription_package == "Unlimited":
-        audio=self.audio_generator.generate(curr_mes)
-        self.send(text_data=json.dumps({"audio": audio, "is_audio": True, "msg_complete": "false"}))
+        with self.client.messages.stream(
+            max_tokens=1024,
+            messages=[{"role": "user", "content": message + user_input}, {"role": "assistant", "content": prefill}, ],
+            model="claude-3-opus-20240229",
+        ) as stream:
+            for text in stream.text_stream:
+                curr_mes += text
+                self.send(text_data=json.dumps({"message": text, "msg_complete": "false"}))
 
-        self.send(text_data=json.dumps({"message": "", "msg_complete": "true"}))
+
+
+        self.send(text_data=json.dumps({"messsage": "", "msg_complete": "true"}))
 
 
     def user_update_on_message(self):
@@ -174,3 +111,5 @@ class ChatConsumer(WebsocketConsumer):
         
         user.save()
 
+
+    

@@ -1,5 +1,5 @@
 services:
-  django_gunicorn:
+  django_daphne:
     volumes:
       - static:/static
     env_file:
@@ -8,26 +8,27 @@ services:
       context: .
     ports:
       - "7950:7950"
-    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:django_gunicorn
+    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:django_daphne
 
 
-  nginx:
-    build: ./nginx
-    volumes:
-      - static:/static
-    ports:
-      - "80:80"
-    depends_on:
-      - django_gunicorn
-    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:nginx
-    restart: unless-stopped
+  # redis:
+  #  build: ./redis
+  #  ports:
+  #    - "6379:6379"
+  #  image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:redis
 
 
-  redis:
-    build: ./redis
-    ports:
-      - "6379:6379"
-    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:redis
+  # nginx:
+  #   build: ./nginx
+  #   volumes:
+  #     - static:/static
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - django_gunicorn
+  #   image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:nginx
+  #   restart: unless-stopped
+
 
 
 volumes:

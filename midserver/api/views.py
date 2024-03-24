@@ -41,6 +41,17 @@ class UpdateChat(APIView):
         chat.save()
         return Response({"response": "chat updated"})
     
+class UpdateChatNSFW(APIView):
+    def post(self, request, format=None):
+        user = self.request.user
+        data = self.request.data
+        chat_id = data["chat_id"]
+        chat = Chat.objects.get(id=chat_id)
+        chat.nsfw = data["nsfw"]
+        chat.save()
+        return Response({"response": "chat nsfw status updated"})
+
+    
 class DeleteChat(APIView):
     def delete(self, request, format=None):
         user = self.request.user

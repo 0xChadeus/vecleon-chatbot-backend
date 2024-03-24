@@ -28,5 +28,6 @@ class Chat(models.Model):
     msg_history = ArrayField(ArrayField(models.TextField(), size=5))
     user_key = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     character_key = models.ForeignKey(CharacterCard, on_delete=models.CASCADE, null=False)
-
+    nsfw = models.BooleanField(default=False)
+    
 
