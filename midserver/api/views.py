@@ -191,10 +191,9 @@ class GetWorlds(APIView):
 class GetCheckout(APIView):
     def put(self, request, format=None):
         user = self.request.user
-        prices = {'unlimited': 'price_1O4zwXLcAPiyHOsMsguhc2P4',
-                  'standard': 'price_1O4zwALcAPiyHOsMFdUygICV',
-                  'starter': 'price_1O4zvELcAPiyHOsMp7ftAY8G',
-                  }
+        prices = {'unlimited': 'price_1O4zwXLcAPiyHOsMsguhc2P4', 'standard': 'price_1P0KUrLcAPiyHOsM5cAoRMYy',}
+        metered_prices = {'standard': 'price_1P0KXELcAPiyHOsMwQ5rOok8', 'unlimited': 'price_1P10CcLcAPiyHOsMq5zQY31Q',}
+        
         data = self.request.data
         product = data['product']
         stripe_response=stripe.checkout.Session.create(
@@ -203,6 +202,9 @@ class GetCheckout(APIView):
                 "price": prices[product],
                 "quantity": 1,
                 },
+                {
+                "price": "price_1P0KXELcAPiyHOsMwQ5rOok8",
+                }
             ],
             mode="subscription",
             success_url="http://127.0.0.1:3000/subscriptions/success/",
@@ -219,6 +221,14 @@ class GetSubscription(APIView):
             return Response({'response' : 'not_subscribed'})
         subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
         return Response({"subscription": subscription, "cancelled":cancelled})
+    
+class GetSubscriptionIsActive(APIView):
+    def get(self, request, format=None):
+        user = self.request.user
+        if user.subscription_is_active:
+            return Response({'response' : 'active'})
+        else:
+            return Response({'response' : 'inactive'})
     
     
 
@@ -290,13 +300,6 @@ class StripeWebhooks(APIView):
             invoice = stripe.Invoice.retrieve(checkout['invoice'])
             line_item = invoice['lines']['data'][0]
             user.subscription_package = line_item
-            match line_item['amount']:
-                case 499:
-                    user.messages_left=2000
-                case 1999:
-                    user.messages_left=10000
-                case 2999:
-                    user.messages_left=1e9
             user.save()
                 
                             
@@ -308,13 +311,9 @@ class StripeWebhooks(APIView):
             user.subscription_is_active = True
             line_item = invoice['lines']['data'][0]
             user.subscription_package = line_item
-            match line_item['amount']:
-                case 499:
-                    user.messages_left=2000
-                case 1999:
-                    user.messages_left=10000
-                case 2999:
-                    user.messages_left=1e9
+            user.current_usage = 0
+            metered_id = stripe.Subscription(user.stripe_subscription_id).items.data[1].id
+            stripe.SubscriptionItem.create_usage_record(metered_id, quantity=0 ,action='set',)
             user.save()
 
 

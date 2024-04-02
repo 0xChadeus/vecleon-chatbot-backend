@@ -17,6 +17,10 @@ from api.models import Chat, CharacterCard
 
 import anthropic
 
+import stripe
+stripe.api_key = "sk_test_51O0YIeLcAPiyHOsMCUTkBhuJF5iaza6JRQcGoUxGnQmDznH3TmxKd2pQUHxPyGdzKRSwSef2lzWgMU1BvvBviY8u00fTjWc0Ju"
+
+
 
 class ChatConsumer(WebsocketConsumer):
 
@@ -87,19 +91,34 @@ class ChatConsumer(WebsocketConsumer):
         #    message_split[12] = ''
         message = '\n'.join(message_split)
 
-        curr_mes = ''
-        with self.client.messages.stream(
-            max_tokens=1024,
-            messages=[{"role": "user", "content": message + user_input}, {"role": "assistant", "content": prefill}, ],
-            model="claude-3-opus-20240229",
-        ) as stream:
-            for text in stream.text_stream:
-                curr_mes += text
-                self.send(text_data=json.dumps({"message": text, "msg_complete": "false"}))
+        if user.subscription_is_active and user.stripe_subscription_id != '':
+            curr_mes = ''
+            with self.client.messages.stream(
+                max_tokens=1024,
+                messages=[{"role": "user", "content": message + user_input}, {"role": "assistant", "content": prefill}, ],
+                model="claude-3-opus-20240229",
+            ) as stream:
+                for text in stream.text_stream:
+                    curr_mes += text
+                    self.send(text_data=json.dumps({"message": text, "msg_complete": "false"}))
+                for event in stream:
+                    if event.type == "message_delta":
+                        tokens_used = event.delta.usage.output_tokens
+                        metered_id = stripe.Subscription(user.stripe_subscription_id).items.data[1].id
+                        stripe.SubscriptionItem.create_usage_record(metered_id, quantity=tokens_used,action='increment',)
+                        user.current_usage += tokens_used
+                    elif event.type == "message_start":
+                        tokens_used = event.message.usage.output_tokens
+                        metered_id = stripe.Subscription(user.stripe_subscription_id).items.data[1].id
+                        stripe.SubscriptionItem.create_usage_record(metered_id, quantity=tokens_used,action='increment',)
+                        user.current_usage += tokens_used
+        else:
+            self.send(text_data=json.dumps({"message": 'account has no active subscription', "msg_complete": "true"}))
+
+                        
 
 
-
-        self.send(text_data=json.dumps({"messsage": "", "msg_complete": "true"}))
+        self.send(text_data=json.dumps({"message": "", "msg_complete": "true"}))
 
 
     def user_update_on_message(self):

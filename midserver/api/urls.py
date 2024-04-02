@@ -21,6 +21,7 @@ urlpatterns = [
     path("get_customer_portal/", views.GetCustomerPortal.as_view(), name="index"),
     path("webhook/", views.StripeWebhooks.as_view(), name="index"),
     path("get_subscription/", views.GetSubscription.as_view(), name="index"),
+    path("get_subscription_is_active/", views.GetSubscriptionIsActive.as_view(), name="index"),
     path("cancel_subscription/", views.CancelSubscription.as_view(), name="index"),
 ]
 

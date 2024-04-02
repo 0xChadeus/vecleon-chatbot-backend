@@ -48,7 +48,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     subscription_package = models.CharField(default="")
     subscription_is_active = models.BooleanField(default=False)
     subscription_is_cancelled = models.BooleanField(default=False)
+    #legacy
     messages_left=models.IntegerField(default=0)
+    #Current number of tokens used
+    current_usage=models.IntegerField(default=0)
 
     objects = UserManager()
 
