@@ -26,7 +26,8 @@ class UserManager(BaseUserManager):
         user.is_staff = True
         user.subscription_is_active = True
         user.subscription_package = "Unlimited"
-        user.messages_left = 10e10
+        user.stripe_subscription_id = "admin"
+        user.stripe_customer_id = "admin"
         user.save(using=self._db)
         return user
 
@@ -52,6 +53,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     messages_left=models.IntegerField(default=0)
     #Current number of tokens used
     current_usage=models.IntegerField(default=0)
+    input_tokens=models.IntegerField(default=0)
+    output_tokens=models.IntegerField(default=0)
 
     objects = UserManager()
 
@@ -66,13 +69,17 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return False
+        if self.is_staff:
+            return True
+        else:
+            return False
 
     def has_module_perms(self, app_label):
         "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return False
+        if self.is_staff:
+            return True
+        else:
+            return False
 
     @property
     def get_subscription_status(self):

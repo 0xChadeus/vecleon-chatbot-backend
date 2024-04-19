@@ -24,12 +24,11 @@ SECRET_KEY = 'django-insecure-4pr=@%&7(^^75cu=9-vc)-k+q7*@eee86ujg_mz037!8zry_6s
 # SECRET_KEY= os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
-DEBUG=os.getenv("DEBUG")
+DEBUG = True
 
-ALLOWED_HOSTS = ['django', '127.0.0.1', '.amazonaws.com', '.vecleonbackend.com', '.vecleon.com']
-CSRF_TRUSTED_ORIGINS = ['https://vecleonbackend.com', 'https://vecleon.com']
-CORS_ALLOWED_ORIGINS = ['https://vecleonbackend.com', 'https://vecleon.com']
+ALLOWED_HOSTS = ['django', '127.0.0.1', '.amazonaws.com', '.vecleon.com', 'stripe.com']
+CSRF_TRUSTED_ORIGINS = ['https://vecleon.com', 'http://127.0.0.1', 'http://localhost', 'http://0.0.0.0']
+CORS_ALLOWED_ORIGINS = ['https://vecleon.com',]
 CORS_ALLOW_CREDENTIALS = True
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 CSRF_COOKIE_HTTPONLY = False
@@ -48,8 +47,8 @@ CORS_ALLOW_HEADERS = [
 CSRF_COOKIE_SAMESITE = None  
 
 # domain settings
-CSRF_COOKIE_DOMAIN = '.vecleon.com'
-SESSION_COOKIE_DOMAIN = '.vecleon.com'
+# CSRF_COOKIE_DOMAIN = '.vecleon.com'
+# SESSION_COOKIE_DOMAIN = '.vecleon.com'
 
 # CROSS DOMAIN SETTINGS, DO NOT TOUCH OTHERWISE
 # SESSION_COOKIE_DOMAIN = '.vecleon-chatbot-frontend.vercel.app'
@@ -133,7 +132,7 @@ DATABASES = {
         "NAME": "chatdb",
         "USER": "postgres",
         "PASSWORD": "LkwRyKtadyWqfhI6rSu7",
-        "HOST": "chatdb.corbpcfpn4er.ap-southeast-2.rds.amazonaws.com",
+        "HOST": "chatdb1.cba0qwcsk6m8.us-west-1.rds.amazonaws.com",
         "PORT": "5432"
     }
 }

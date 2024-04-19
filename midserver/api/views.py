@@ -1,6 +1,7 @@
 from django.shortcuts import render
 import json
 import os
+from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import CharacterCard, WorldCard, Chat
@@ -86,6 +87,11 @@ class GetChat(APIView):
 class CreateCharacter(APIView):
     def post(self, request, format=None):
         user = self.request.user
+        if user.stripe_customer_id == '' or user.stripe_subscription_id == '' or user.subscription_is_active == False:
+            return Response({"response": "user does not have an active subscription or stripe customer ID"})
+        elif user.charactercard_set.all().count() >= 20 and user.subscription_package == "Standard":
+            return Response({"response": "user is subscribed to the standard package and tried to create more than 20 active characters. User must delete a character first before proceeding."})
+
         data = self.request.data
         name = data["name"]
         description = data["description"]
@@ -100,6 +106,8 @@ class CreateCharacter(APIView):
 class UpdateCharacter(APIView):
     def patch(self, request, format=None):
         user = self.request.user
+        if user.stripe_customer_id == '' or user.stripe_subscription_id == '' or user.subscription_is_active == False:
+            return Response({"response": "user does not have an active subscription or stripe customer ID"})
         data = self.request.data
         character_id = data['id']
         name = data["name"]
@@ -203,12 +211,12 @@ class GetCheckout(APIView):
                 "quantity": 1,
                 },
                 {
-                "price": "price_1P0KXELcAPiyHOsMwQ5rOok8",
+                "price": metered_prices[product],
                 }
             ],
             mode="subscription",
-            success_url="http://127.0.0.1:3000/subscriptions/success/",
-            cancel_url="http://127.0.0.1:3000/subscriptions/",
+            success_url="https://vecleon.com/edit/characters/",
+            cancel_url="https://vecleon.com/subscriptions/",
             customer_email=user.get_username(),
         )
         return Response(stripe_response)
@@ -310,7 +318,12 @@ class StripeWebhooks(APIView):
             user = User.objects.get(stripe_customer_id=customer)
             user.subscription_is_active = True
             line_item = invoice['lines']['data'][0]
-            user.subscription_package = line_item
+            if 'Standard' in line_item["description"]:
+                user.subscription_package = "Standard"
+            elif 'Unlimited' in line_item["description"]:
+                user.subscription_package = "Unlimited"
+            else:
+                user.subscription_package = "Undefined"
             user.current_usage = 0
             metered_id = stripe.Subscription(user.stripe_subscription_id).items.data[1].id
             stripe.SubscriptionItem.create_usage_record(metered_id, quantity=0 ,action='set',)

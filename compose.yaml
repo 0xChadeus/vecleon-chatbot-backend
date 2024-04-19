@@ -8,14 +8,13 @@ services:
       context: .
     ports:
       - "7950:7950"
-    image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:django_daphne
+    image: 201063440280.dkr.ecr.us-west-1.amazonaws.com/server:django_daphne
 
-
-  # redis:
-  #  build: ./redis
-  #  ports:
-  #    - "6379:6379"
-  #  image: 201063440280.dkr.ecr.ap-southeast-2.amazonaws.com/server:redis
+  redis:
+    build: ./redis
+    ports:
+      - "6379:6379"
+    image: 201063440280.dkr.ecr.us-west-1.amazonaws.com/server:redis
 
 
   # nginx:
