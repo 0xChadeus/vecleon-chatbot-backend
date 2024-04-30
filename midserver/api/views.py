@@ -4,7 +4,7 @@ import os
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import CharacterCard, WorldCard, Chat, Message
+from .models import CharacterCard, WorldCard, Chat 
 from authbackend.models import User
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
