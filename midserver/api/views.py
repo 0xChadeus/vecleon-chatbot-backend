@@ -4,7 +4,7 @@ import os
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import CharacterCard, WorldCard, Chat
+from .models import CharacterCard, WorldCard, Chat, Message
 from authbackend.models import User
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
@@ -77,9 +77,15 @@ class GetChat(APIView):
         chat_serial = ChatSerializer(chat)
         return Response(chat_serial.data)
 
-
-
-
+class DeleteMessage(APIView):
+    def delete(self, request, format=None):
+        user = self.request.user
+        data = self.request.data
+        message_id = data["id"]
+        message = Chat.objects.filter(msg_history__contains=message_id)
+        message.delete()
+        chat.save()
+        return Response({"response": "message deleted"})
 
 
 
@@ -148,8 +154,6 @@ class GetCharacter(APIView):
 
 
 
-
-
 class CreateWorld(APIView):
     def post(self, request, format=None):
         user = self.request.user
@@ -199,8 +203,8 @@ class GetWorlds(APIView):
 class GetCheckout(APIView):
     def put(self, request, format=None):
         user = self.request.user
-        prices = {'unlimited': 'price_1O4zwXLcAPiyHOsMsguhc2P4', 'standard': 'price_1P0KUrLcAPiyHOsM5cAoRMYy',}
-        metered_prices = {'standard': 'price_1P0KXELcAPiyHOsMwQ5rOok8', 'unlimited': 'price_1P10CcLcAPiyHOsMq5zQY31Q',}
+        prices = {'standard': 'price_1P0KUrLcAPiyHOsM5cAoRMYy', 'unlimited': ''}
+        metered_prices = {'standard': 'price_1PARfGLcAPiyHOsMTfHRh82k', 'unlimited': '',}
         
         data = self.request.data
         product = data['product']
@@ -264,7 +268,7 @@ class GetCustomerPortal(APIView):
         if user.stripe_customer_id != '':
             portal = stripe.billing_portal.Session.create(
                 customer=user.stripe_customer_id,
-                return_url="http://127.0.0.1:3000/account/",
+                return_url="https://vecleon.com/account/",
                 )
             return Response(portal)
         else:
@@ -287,7 +291,7 @@ class StripeWebhooks(APIView):
         except ValueError as e:
             # Invalid payload
             return Response(status=400)            
-        print('meme')
+        print('stripe webhook event')
             
         if event['type'] == 'checkout.session.completed':
             checkout = event['data']['object']
@@ -297,25 +301,23 @@ class StripeWebhooks(APIView):
             if user.stripe_subscription_id != '':
                 try:
                     stripe.Subscription.cancel(user.stripe_subscription_id)
+                    user.subscription_is_cancelled = True
                 except:
                     print(f'cannot cancel subscription {user.stripe_subscription_id}, possibly already cancelled')
-                    user.stripe_subscription_id = ''
-                    user.stripe_customer_id = ''
-                    user.save()
+                user.stripe_subscription_id = ''
+                user.stripe_customer_id = ''
+                user.save()
             user.stripe_subscription_id = checkout['subscription']
             user.stripe_customer_id = checkout['customer']
-            user.subscription_is_active = True
             invoice = stripe.Invoice.retrieve(checkout['invoice'])
-            line_item = invoice['lines']['data'][0]
-            user.subscription_package = line_item
             user.save()
-                
                             
         elif event['type'] == 'invoice.paid':
             invoice = event['data']['object']
             subscription = invoice['subscription']
-            customer = invoice['customer']
-            user = User.objects.get(stripe_customer_id=customer)
+            customer_email = invoice['customer_email']
+            print('CUSTOMER EMAIL AT INVOICE: ', customer_email)
+            user = User.objects.get(email=customer_email)
             user.subscription_is_active = True
             line_item = invoice['lines']['data'][0]
             if 'Standard' in line_item["description"]:
@@ -325,10 +327,7 @@ class StripeWebhooks(APIView):
             else:
                 user.subscription_package = "Undefined"
             user.current_usage = 0
-            metered_id = stripe.Subscription(user.stripe_subscription_id).items.data[1].id
-            stripe.SubscriptionItem.create_usage_record(metered_id, quantity=0 ,action='set',)
             user.save()
-
 
         elif event['type'] == 'customer.subscription.updated':
             subscription = event['data']['object']

@@ -67,7 +67,7 @@ class UserAdmin(BaseUserAdmin):
                     "subscription_is_active", "subscription_package",
                     "is_staff", "free_msgs", "messages_left", 
                     "subscription_is_cancelled",
-                    "input_tokens", "output_tokens"]
+                    "input_tokens", "output_tokens", "current_usage"]
     list_filter = ["subscription_is_active", "email", "is_staff", "current_usage", "subscription_is_cancelled", "input_tokens", "output_tokens"]
     fieldsets = [
         (None, {"fields": ["email", "password"]}),

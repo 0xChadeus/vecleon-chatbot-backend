@@ -26,9 +26,9 @@ SECRET_KEY = 'django-insecure-4pr=@%&7(^^75cu=9-vc)-k+q7*@eee86ujg_mz037!8zry_6s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['django', '127.0.0.1', '.amazonaws.com', '.vecleon.com', 'stripe.com']
-CSRF_TRUSTED_ORIGINS = ['https://vecleon.com', 'http://127.0.0.1', 'http://localhost', 'http://0.0.0.0']
-CORS_ALLOWED_ORIGINS = ['https://vecleon.com',]
+ALLOWED_HOSTS = ['django', '.amazonaws.com', '.vecleon.com', 'stripe.com', '127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://vecleon.com', 'http://127.0.0.1']
+CORS_ALLOWED_ORIGINS = ['https://vecleon.com', 'http://127.0.0.1']
 CORS_ALLOW_CREDENTIALS = True
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 CSRF_COOKIE_HTTPONLY = False

@@ -5,7 +5,7 @@ Django==4.2.7
 djangorestframework==3.14.0
 Requests==2.31.0
 sseclient_py==1.8.0
-stripe==7.0.0
+stripe==9.4.0
 django-cors-headers==4.2.0
 daphne==4.0.0
 psycopg==3.1.12
@@ -19,3 +19,4 @@ supervisor==4.2.5
 sentence_transformers==2.2.2
 numpy==1.21.5
 anthropic
+replicate
