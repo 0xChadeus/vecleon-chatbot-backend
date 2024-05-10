@@ -20,18 +20,23 @@ class CreateChat(APIView):
         user = self.request.user
         data = self.request.data
         name = data["name"]
+        user_name = data["user_name"]
+        user_img = data["user_img"]
+        print('username: ', user_name)
         character_id = data["character_id"]
         character = CharacterCard.objects.get(id=character_id)  
         Chat.objects.create(name=name, msg_history=[], 
                                    user_key=user, 
-                                   character_key=character)
+                                   character_key=character,
+                                   user_name=user_name,
+                                   user_img=user_img,)
         return Response({"response": "chat created"})
  
 class UpdateChat(APIView):
     def post(self, request, format=None):
         user = self.request.user
         data = self.request.data
-        mes_id = str(uuid.uuid4())
+        mes_id = data["mes_id"]
         chat_id = data["chat_id"]
         message = data["msg"]
         images = data["images"]
@@ -63,6 +68,7 @@ class DeleteChat(APIView):
         return Response({"response": "chat deleted"})
     
 class GetChats(APIView):
+    # get all chats for a user
     def get(self, request, format=None):
         user = self.request.user
         chats = user.chat_set.all()
@@ -70,6 +76,7 @@ class GetChats(APIView):
         return Response(chats_serial.data)
     
 class GetChat(APIView):
+    # get a single chat
     def put(self, request, format=None):
         user = self.request.user
         chat_id = self.request.data["chat_id"]
@@ -82,8 +89,12 @@ class DeleteMessage(APIView):
         user = self.request.user
         data = self.request.data
         message_id = data["id"]
-        message = Chat.objects.filter(msg_history__contains=message_id)
-        message.delete()
+        chat_id = data["chat_id"]
+        chat = Chat.objects.get(id=chat_id)
+        for i in range(len(chat.msg_history)):
+            if chat.msg_history[i][4] == message_id:
+                chat.msg_history.pop(i)
+                break
         chat.save()
         return Response({"response": "message deleted"})
 

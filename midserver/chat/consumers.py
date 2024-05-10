@@ -98,13 +98,13 @@ class ChatConsumer(WebsocketConsumer):
 
             input_tokens = self.tokenizer.encode(message + user_input + '\n' + prefill)
             n_input_tokens = len(input_tokens)
-            if n_input_tokens >= 8000:
-                context = context[len(context) - (8000-n_input_tokens):len(context)]
-            message_split[6] = "<context>" + '\n' + context + '\n' + "</context>"
+            if n_input_tokens > 7800:
+                context = context[-(7800-n_input_tokens):len(context)]
+            message_split[12] = "<context>" + '\n' + context + '\n' + "</context>"
             message = '\n'.join(message_split)
 
             curr_mes = ''
-            input = {'prompt': message + user_input + '\n' + prefill, 'temperature': 2.6, 'top_p': 0.7, 'top_k': 25, 'max_new_tokens': 1000, 'repetition_penalty':0.85}
+            input = {'prompt': message + user_input + '\n' + prefill, 'temperature': 2.5, 'top_p': 0.7, 'top_k': 20, 'max_new_tokens': 1000, 'repetition_penalty':0.85}
 
             for event in replicate.stream("meta/meta-llama-3-70b-instruct", input= input):
                     self.send(text_data=json.dumps({"message": str(event), "msg_complete": "false"}))

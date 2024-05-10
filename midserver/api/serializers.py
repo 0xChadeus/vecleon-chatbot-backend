@@ -70,6 +70,8 @@ class ChatSerializer(serializers.Serializer):
             )
         )
     character_key = CharacterSerializer(read_only=True)
+    user_name = serializers.CharField(max_length=250)
+    user_img = serializers.CharField(max_length=500)
 
     def create(self, validated_data):
         """
@@ -85,6 +87,8 @@ class ChatSerializer(serializers.Serializer):
         instance.name = validated_data.get('name', instance.name)
         instance.msg_history = validated_data.get('msg_history', instance.msg_history)
         instance.character_key = validated_data.get('character_key', instance.character_key)
+        instance.user_name = validated_data.get('user_name', instance.user_name)
+        instance.user_img = validated_data.get('user_img', instance.user_img)
         instance.save()
         return instance
     

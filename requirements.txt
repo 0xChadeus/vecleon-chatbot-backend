@@ -1,14 +1,14 @@
 asgiref==3.7.2
 channels==4.0.0
 channels_redis==4.1.0
-Django==4.2.7
+django==5.0.6
 djangorestframework==3.14.0
 Requests==2.31.0
 sseclient_py==1.8.0
 stripe==9.4.0
 django-cors-headers==4.2.0
 daphne==4.0.0
-psycopg==3.1.12
+psycopg==3.1.18
 boto3==1.29.4
 google_api_python_client==2.107.0
 google_auth_oauthlib==1.0.0
