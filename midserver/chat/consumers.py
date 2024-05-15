@@ -6,6 +6,7 @@ from asgiref.sync import async_to_sync
 import json
 import requests
 import time
+from datetime import datetime, timedelta
 
 import json
 from .extra_features.ltm.client import LTM
@@ -44,9 +45,21 @@ class ChatConsumer(WebsocketConsumer):
             print('user not authenticated')
             return
         elif not user.subscription_is_active:
-            print('user is not subscribed')
+            print('user does not have an active subscription')
             return
-
+        elif user.stripe_subscription_id == '':
+            print('user does not have a stripe subscription ID')
+            return
+        subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+        if user.subscription_is_cancelled:
+            if subscription.current_period_end < datetime.now():
+                print('current period end: {}'.format(subscription.current_period_end))
+                print('now: {}'.format(datetime.now()))
+                if user.subscription_is_active:
+                    user.subscription_is_active = False
+                    user.save()
+                print('User subscription has expired')
+                return
 
         self.accept()
 

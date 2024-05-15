@@ -38,12 +38,14 @@ class UserSignup(APIView):
             return Response({'error': 'user already exists'})
         else:
             User.objects.create_user(email, password)
+            html_message = render_to_string('welcome_email.html', {'context': 'values'})
+            plain_message = strip_tags(html_message)
             send_mail(
                     'Welcome to Vecleon',
                     'Welcome to Vecleon! Your account has been created. Please login to continue. \n\n Yours sincerely, The Vecleon Team',
                     'noreply@vecleon.com',
                     [email],
-                    html_message='',
+                    html_message=html_message,
                     fail_silently=False
                     )
             return Response({'response': 'user registration successful'})

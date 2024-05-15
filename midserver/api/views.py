@@ -9,6 +9,10 @@ from authbackend.models import User
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.staticfiles import finders
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.core.mail import send_mail
 from .serializers import CharacterSerializer, WorldSerializer, ChatSerializer
 import stripe
 import uuid
@@ -253,25 +257,6 @@ class GetSubscriptionIsActive(APIView):
         else:
             return Response({'response' : 'inactive'})
     
-    
-
-class CancelSubscription(APIView):
-    # legacy, webhook listener 
-    # for "customer.subscription.updated" does the same thing
-    def put(self, request, format=None):
-        user = self.request.user
-        if user.stripe_subscription_id != '':
-            try:
-                stripe.Subscription.modify(user.stripe_subscription_id,
-                                           cancel_at_period_end=True,)
-                user.subscription_is_cancelled = True
-                user.save()
-            except:
-                print(f'cannot cancel subscription {user.stripe_subscription_id}, possibly already cancelled')
-        else:
-            return Response({'user has no active subscription'})
-        return Response({f'subscription {user.stripe_subscription_id} cancelled'})
-
 
 class GetCustomerPortal(APIView):
     def put(self, request, format=None):
@@ -322,6 +307,16 @@ class StripeWebhooks(APIView):
             user.stripe_customer_id = checkout['customer']
             invoice = stripe.Invoice.retrieve(checkout['invoice'])
             user.save()
+            email = user
+            html_message = render_to_string('first_payment_email.html', {'context': 'values'})
+            send_mail(
+                    'Vecleon Checkout Complete!',
+                    'Your payment has been received. Please login to use all the features that are unlocked to you. \n\n Yours sincerely, The Vecleon Team',
+                    'noreply@vecleon.com',
+                    [email],
+                    html_message=html_message, 
+                    fail_silently=False,
+                    )
                             
         elif event['type'] == 'invoice.paid':
             invoice = event['data']['object']
@@ -339,6 +334,16 @@ class StripeWebhooks(APIView):
                 user.subscription_package = "Undefined"
             user.current_usage = 0
             user.save()
+            email = user
+            html_message = render_to_string('invoice_paid_email.html', {'context': 'values'})
+            send_mail(
+                    'Vecleon Invoice Paid',
+                    'Your payment has been received. Please login to use all the features that are unlocked to you. \n\n Yours sincerely, The Vecleon Team',
+                    'noreply@vecleon.com',
+                    [email],
+                    html_message=html_message, 
+                    fail_silently=False,
+                    )
 
         elif event['type'] == 'customer.subscription.updated':
             subscription = event['data']['object']
@@ -361,6 +366,7 @@ class StripeWebhooks(APIView):
 
         elif event['type'] == 'customer.subscription.deleted':
             subscription = event['data']['object']
+            print(subscription)
             user = User.objects.get(stripe_customer_id=subscription['customer'])
             user.subscription_is_active=False
             user.messages_left=0
