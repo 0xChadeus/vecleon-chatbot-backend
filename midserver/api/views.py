@@ -16,7 +16,7 @@ from django.core.mail import send_mail
 from .serializers import CharacterSerializer, WorldSerializer, ChatSerializer
 import stripe
 import uuid
-stripe.api_key = "sk_test_51O0YIeLcAPiyHOsMCUTkBhuJF5iaza6JRQcGoUxGnQmDznH3TmxKd2pQUHxPyGdzKRSwSef2lzWgMU1BvvBviY8u00fTjWc0Ju"
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 
 class CreateChat(APIView):
@@ -273,12 +273,10 @@ class GetCustomerPortal(APIView):
     
 
 class StripeWebhooks(APIView):
-    endpoint_secret = 'whsec_88556757c031d0826ba778a9da2dc7b42297d0b103899b420b60267f2bd85b85'
     @csrf_exempt
     def post(self, request, format=None):
         event = None
         payload = self.request.data
-        # print(payload)
 
         try:
             event = stripe.Event.construct_from(
@@ -311,7 +309,7 @@ class StripeWebhooks(APIView):
             html_message = render_to_string('first_payment_email.html', {'context': 'values'})
             send_mail(
                     'Vecleon Checkout Complete!',
-                    'Your payment has been received. Please login to use all the features that are unlocked to you. \n\n Yours sincerely, The Vecleon Team',
+                    'Your checkout has completed. An email confirming your invoice will be sent soon. \n\n Yours sincerely, The Vecleon Team',
                     'noreply@vecleon.com',
                     [email],
                     html_message=html_message, 
@@ -366,7 +364,7 @@ class StripeWebhooks(APIView):
 
         elif event['type'] == 'customer.subscription.deleted':
             subscription = event['data']['object']
-            print(subscription)
+            print('deleted subscription: ', subscription)
             user = User.objects.get(stripe_customer_id=subscription['customer'])
             user.subscription_is_active=False
             user.messages_left=0

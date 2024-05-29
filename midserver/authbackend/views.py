@@ -6,10 +6,12 @@ from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.core.mail import send_mail
+from api.models import CharacterCard 
 from .models import User
 from django.contrib.staticfiles import finders
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+import json
 
 class TestEmail(APIView):
     def post(self, request, format=None):
@@ -29,15 +31,29 @@ class TestEmail(APIView):
 
 @method_decorator(csrf_protect, name='dispatch')
 class UserSignup(APIView):
+    def create_defaults(self, user):
+        templates_folder = 'templates/'
+        default_chars = ["john", "chloe", "alexander"]
+        for char in default_chars:
+            with open(templates_folder + char + '.json') as f:
+                d = json.load(f)
+                name = d["data"]["name"]
+                description = d["data"]["description"]
+                personality_summary = d["data"]["personality"]
+                scenario = d['data']['scenario']
+                src = d['data']['src']
+                CharacterCard.objects.create(name=name, description=description, personality_summary=personality_summary, scenario=scenario, src=src, user_key=user)
+
+
     def post(self, request, format=None):
         data = self.request.data
         email = data["email"]
         password = data["password"]
-        print(email, password)
         if User.objects.filter(email=email).exists():
             return Response({'error': 'user already exists'})
         else:
-            User.objects.create_user(email, password)
+            user = User.objects.create_user(email, password)
+            self.create_defaults(user)
             html_message = render_to_string('welcome_email.html', {'context': 'values'})
             plain_message = strip_tags(html_message)
             send_mail(

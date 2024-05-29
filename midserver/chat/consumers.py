@@ -13,12 +13,13 @@ from .extra_features.ltm.client import LTM
 
 from api.models import Chat
 
-import anthropic
 import replicate
 from transformers import LlamaTokenizerFast
 
+import os
+
 import stripe
-stripe.api_key = "sk_test_51O0YIeLcAPiyHOsMCUTkBhuJF5iaza6JRQcGoUxGnQmDznH3TmxKd2pQUHxPyGdzKRSwSef2lzWgMU1BvvBviY8u00fTjWc0Ju"
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY') 
 
 
 
@@ -26,7 +27,6 @@ class ChatConsumer(WebsocketConsumer):
 
     ltm = LTM(collection_name='chatbot1')
     s = requests.Session()
-    client = anthropic.Anthropic(api_key='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')
     message_finished = True
     tokenizer = LlamaTokenizerFast.from_pretrained("hf-internal-testing/llama-tokenizer")
     
